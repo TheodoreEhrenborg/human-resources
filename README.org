@@ -1,11 +1,27 @@
 * human-resources
 
+(In response to [[https://gist.github.com/kthakore/5b93d1ce7b3863ca06ca1a1728fd58e8][this challenge]])
+
+
+** Features
+- HR can create job postings
+- Job candidates can make an account to apply for open jobs
+- HR can see who has applied for what jobs, and decide whether to accept/reject them
+- Candidates can track the status of their application
+- The Application, Candidate, and Job objects are automatically read from a file at the beginning of a session. The file updates at the end of the session
+
+** Guardrails
+- Applications have 4 states: applied, interviewed, rejected, and accepted. Nonsensical actions (e.g. doing an interview after rejecting a candidate) cannot be executed
+- HR can close jobs manually, but jobs also automatically close after an application is accepted
+- Candidates cannot apply to a closed job or be accepted to it
+- To prevent data races, ~main.py~ will not run if another copy of it is currently running
 ** Issues
-- The Job, Application, and Candidate classes have similar static methods. It would be more concise if they inherited all of them from a common ancestor
-- Multithreading? A separate routine that job candidates run?
+- The Application, Candidate, and Job classes have similar static methods. It would be more elegant if they inherited these methods from a common ancestor
+- Only one user can interact with the system at any one time. A kludgy solution is to have one script ~candidate.py~ that interacts with the candidate, and one script ~hr.py~ that interacts simultaneously with HR. If done carelessly, this would create data races. A safer solution would be to implement multithreading. That can wait until I translate this repository into Rust
+- This system is not at all secure. Candidates have easily guessable login credentials
 ** Demonstration
 
-First we create two jobs:
+First HR creates two jobs:
 
 (The program prints the list of options every time the user has a choice, but I've deleted most of those printouts for conciseness.)
 #+BEGIN_EXAMPLE
@@ -34,7 +50,7 @@ Your choice: list cands
 No candidates
 Your choice: exit
 #+END_EXAMPLE
-Then Alice applies for both jobs:
+Then Alice registers and applies for both jobs:
 #+BEGIN_EXAMPLE
 $ python main.py
 Type 1 if you're in HR, 2 if you want to apply for a job: 2
@@ -91,7 +107,7 @@ Your choice: update
 Your resume: I really like to eat pizza
 Your choice: exit
 #+END_EXAMPLE
-Then Bob applies for a job:
+Then Bob registers and applies for a job at Burger King:
 #+BEGIN_EXAMPLE
 $ python main.py
 Type 1 if you're in HR, 2 if you want to apply for a job: 2
@@ -125,7 +141,7 @@ Status: Applied
 
 Your choice: exit
 #+END_EXAMPLE
-Then we process the job applications, accepting Alice to Burger King and rejecting Bob.
+Then HR processes the job applications. After doing interviews, HR rejects Alice's application to Pizza Hut, accepts her application to Burger King, and rejects Bob's application to Burger King. For lack of qualified applicants, HR closes the job opening at Pizza Hut.
 #+BEGIN_EXAMPLE
 $ python main.py
 Type 1 if you're in HR, 2 if you want to apply for a job: 1
