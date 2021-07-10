@@ -10,7 +10,14 @@ class Status(Enum):
     ACCEPTED = auto()
 
 
+class NotSeriousException(Exception):
+    pass
+
+
 class Candidate:
+    """A candidate.
+    Keeps track of which applications they have made"""
+
     candidate_list = []
 
     @staticmethod
@@ -33,24 +40,22 @@ class Candidate:
             c = Candidate.find_candidate_with_id(id_num)
             print("Hello, " + c.name)
             return c
-        else:
-            c = Candidate()
-            c.register()
-            return c
+        c = Candidate()
+        c.register()
+        return c
 
     @staticmethod
     def find_candidate_with_id(id_num):
         for c in Candidate.candidate_list:
             if c.id_num == id_num:
                 return c
-        else:
-            raise Exception("ID not found")
+        raise NotSeriousException("ID not found")
 
     @staticmethod
     def print_candidates():
-        any = False
+        any_found = False
         for c in Candidate.candidate_list:
-            any = True
+            any_found = True
             print("ID: " + c.id_num)
             print("Name: " + c.name)
             print("Resume: " + c.resume)
@@ -59,8 +64,8 @@ class Candidate:
             for a in c.applications:
                 print(a)
             print()
-        if not any:
-            raise Exception("No candidates")
+        if not any_found:
+            raise NotSeriousException("No candidates")
 
     def __init__(self):
         self.name = ""
@@ -84,17 +89,11 @@ class Candidate:
         a = Application()
         try:
             a.make_application(self)
-        except Exception as e:
+        except NotSeriousException as e:
             print(e)
 
     def list_my_applications(self):
         Application.list_applications_of(self)
-
-    def list_available_jobs(self):
-        try:
-            Job.print_available_jobs_long()
-        except Exception as e:
-            print(e)
 
     def interact(self):
         options = [
@@ -119,7 +118,10 @@ class Candidate:
             while choice not in options:
                 choice = input("Your choice: ").lower()
             if choice == "list":
-                self.list_available_jobs()
+                try:
+                    Job.print_available_jobs_long()
+                except NotSeriousException as e:
+                    print(e)
             elif choice == "see":
                 print(self.resume)
             elif choice == "update":
@@ -133,6 +135,8 @@ class Candidate:
 
 
 class Job:
+    """A job. Created by HR, can be viewed by candidates"""
+
     job_list = []
 
     @staticmethod
@@ -145,40 +149,40 @@ class Job:
 
     @staticmethod
     def print_available_jobs_short():
-        any = False
+        any_found = False
         for job in Job.job_list:
             if job.available:
-                any = True
+                any_found = True
                 print("ID: " + job.id_num)
                 print("Title: " + job.title)
                 print()
-        if not any:
-            raise Exception("No jobs available")
+        if not any_found:
+            raise NotSeriousException("No jobs available")
 
     @staticmethod
     def print_available_jobs_long():
-        any = False
+        any_found = False
         for job in Job.job_list:
             if job.available:
-                any = True
+                any_found = True
                 print("ID: " + job.id_num)
                 print("Title: " + job.title)
                 print("Description: " + job.description)
                 print()
-        if not any:
-            raise Exception("No jobs available")
+        if not any_found:
+            raise NotSeriousException("No jobs available")
 
     @staticmethod
     def print_jobs_long():
-        any = False
+        any_found = False
         for job in Job.job_list:
-            any = True
+            any_found = True
             print("ID: " + job.id_num)
             print("Title: " + job.title)
             print("Description: " + job.description)
             print()
-        if not any:
-            raise Exception("No jobs available")
+        if not any_found:
+            raise NotSeriousException("No jobs available")
 
     @staticmethod
     def get_ids():
@@ -189,7 +193,7 @@ class Job:
         for job in Job.job_list:
             if job.id_num == id_num:
                 return job
-        raise Exception("No such job found")
+        raise NotSeriousException("No such job found")
 
     def __init__(self):
         self.title = ""
@@ -208,10 +212,16 @@ class Job:
         self.id_num = Job.generate_id()
 
     def close_job(self):
+        if self.available == False:
+            raise NotSeriousException(
+                "This job was already closed"
+            )
         self.available = False
 
 
 class Application:
+    """A application made by a particular candidate
+    to a particular job"""
 
     application_list = []
 
@@ -226,39 +236,46 @@ class Application:
     @staticmethod
     def list_applications_of(candidate):
         for a in Application.application_list:
-            print(a)
-            print()
+            if a.candidate == candidate:
+                print(a)
+                print()
 
     @staticmethod
     def print_open_applications():
-        any = False
+        any_found = False
         for a in Application.application_list:
             if a.status not in (
                 Status.REJECTED,
                 Status.ACCEPTED,
             ):
-                any = True
+                any_found = True
                 print(a)
                 print()
-        if not any:
-            raise Exception("No open applications")
+        if not any_found:
+            raise NotSeriousException(
+                "No open applications"
+            )
 
     @staticmethod
     def print_applications():
-        any = False
+        any_found = False
         for a in Application.application_list:
-            any = True
+            any_found = True
             print(a)
             print()
-        if not any:
-            raise Exception("No open applications")
+        if not any_found:
+            raise NotSeriousException(
+                "No open applications"
+            )
 
     @staticmethod
     def get_application_with_id(id_num):
         for a in Application.application_list:
             if a.id_num == id_num:
                 return a
-        raise Exception("No such application found")
+        raise NotSeriousException(
+            "No such application found"
+        )
 
     def __init__(self):
         self.id_num = ""
@@ -279,11 +296,11 @@ class Application:
 
     def get_details(self):
         output = str(self)
-        output += "\nCandidate: " + a.candidate.id_num
+        output += "\nCandidate: " + self.candidate.id_num
         if self.status != Status.APPLIED:
             output += (
                 "\nInterview transcript: "
-                + a.interview_transcript
+                + self.interview_transcript
             )
         return output
 
@@ -301,7 +318,9 @@ class Application:
             job_id_num = input("ID: ")
         self.job = Job.get_job_with_id(job_id_num)
         if not self.job.available:
-            raise Exception("This job was already filled")
+            raise NotSeriousException(
+                "This job was already filled"
+            )
         self.candidate = candidate
         self.candidate.applications.append(self)
         Application.add(self)
@@ -309,7 +328,7 @@ class Application:
 
     def do_interview(self):
         if self.status != Status.APPLIED:
-            raise Exception(
+            raise NotSeriousException(
                 "This candidate has already been interviewed"
             )
         self.interview_transcript = input(
@@ -319,15 +338,17 @@ class Application:
 
     def reject(self):
         if self.status == Status.APPLIED:
-            raise Exception(
+            raise NotSeriousException(
                 "Please do an interview before rejecting the candidate"
             )
-        elif self.status in (
+        if self.status in (
             Status.REJECTED,
             Status.ACCEPTED,
         ):
-            raise Exception("Already accepted or rejected")
-        elif self.status != Status.INTERVIEWED:
+            raise NotSeriousException(
+                "Already accepted or rejected"
+            )
+        if self.status != Status.INTERVIEWED:
             raise Exception(
                 "The status variable is corrupted"
             )
@@ -335,20 +356,22 @@ class Application:
 
     def accept(self):
         if self.status == Status.APPLIED:
-            raise Exception(
+            raise NotSeriousException(
                 "Please do an interview before accepting the candidate"
             )
-        elif self.status in (
+        if self.status in (
             Status.REJECTED,
             Status.ACCEPTED,
         ):
-            raise Exception("Already accepted or rejected")
-        elif self.status != Status.INTERVIEWED:
+            raise NotSeriousException(
+                "Already accepted or rejected"
+            )
+        if self.status != Status.INTERVIEWED:
             raise Exception(
                 "The status variable is corrupted"
             )
-        self.status = Status.ACCEPTED
         self.job.close_job()
+        self.status = Status.ACCEPTED
 
 
 def hr_interact():
@@ -392,50 +415,48 @@ def hr_interact():
             try:
                 j = Job.get_job_with_id(input("Job ID: "))
                 j.available = False
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         elif choice == "list cands":
             try:
                 Candidate.print_candidates()
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         elif choice == "list apps":
             try:
                 Application.print_applications()
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         elif choice == "list open apps":
             try:
                 Application.print_open_applications()
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         elif choice == "list jobs":
             try:
                 Job.print_jobs_long()
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         elif choice == "list open jobs":
             try:
                 Job.print_available_jobs_long()
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         elif choice == "details":
-            if True:
-                # try:
-                # I got an error when I selected details
+            try:
                 a = Application.get_application_with_id(
                     input("Application ID: ")
                 )
                 print(a.get_details())
-        #    except Exception as e:
-        #        print(e)
+            except NotSeriousException as e:
+                print(e)
         elif choice == "interview":
             try:
                 a = Application.get_application_with_id(
                     input("Application ID: ")
                 )
                 a.do_interview()
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         elif choice == "accept":
             try:
@@ -443,7 +464,7 @@ def hr_interact():
                     input("Application ID: ")
                 )
                 a.accept()
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         elif choice == "reject":
             try:
@@ -451,7 +472,7 @@ def hr_interact():
                     input("Application ID: ")
                 )
                 a.reject()
-            except Exception as e:
+            except NotSeriousException as e:
                 print(e)
         else:
             break

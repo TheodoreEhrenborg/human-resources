@@ -3,3 +3,308 @@
 ** Issues
 - The Job, Application, and Candidate classes have similar static methods. It would be more concise if they inherited all of them from a common ancestor
 - Multithreading? A separate routine that job candidates run?
+** Demonstration
+
+First we create two jobs:
+
+(The program prints the list of options every time the user has a choice, but I've deleted most of those printouts for conciseness.)
+#+BEGIN_EXAMPLE
+$ python main.py
+Type 1 if you're in HR, 2 if you want to apply for a job: 1
+Your options are:
+        make --- make a job posting
+        close --- manually close a job posting
+        list cands --- list all candidates
+        list apps --- list all job applications
+        list open apps --- like previous, excluding accepted and rejected ones
+        list jobs --- list all job postings
+        list open jobs --- list all open job postings
+        details --- print details of an application
+        interview --- conduct an interview for an application
+        accept --- accept an application
+        reject --- reject an application
+        exit
+Your choice: make
+Title: Burger King
+Describe the job: Cook hamburgers
+Your choice: make
+Title: Pizza Hut
+Describe the job: Put sauce on pizza
+Your choice: list cands
+No candidates
+Your choice: exit
+#+END_EXAMPLE
+Then Alice applies for both jobs:
+#+BEGIN_EXAMPLE
+$ python main.py
+Type 1 if you're in HR, 2 if you want to apply for a job: 2
+Have you already registered? (y/n) n
+Name: Alice
+Your resume: I like to eat pizza
+Your ID: C1
+Your options are:
+    list --- see a list of available jobs
+    see --- see your resume
+    update --- update your resume
+    check --- check the status of your job applications
+    apply --- apply for a job
+    exit
+Your choice: see
+I like to eat pizza
+Your choice: list
+ID: J1
+Title: Burger King
+Description: Cook hamburgers
+
+ID: J2
+Title: Pizza Hut
+Description: Put sauce on pizza
+
+Your choice: apply
+ID: J1
+Title: Burger King
+
+ID: J2
+Title: Pizza Hut
+
+Enter the ID of the job you wish to apply for.
+ID: J1
+Your choice: apply
+ID: J1
+Title: Burger King
+
+ID: J2
+Title: Pizza Hut
+
+Enter the ID of the job you wish to apply for.
+ID: J2
+Your choice: check
+ID: A1
+Job: Burger King
+Status: Applied
+
+ID: A2
+Job: Pizza Hut
+Status: Applied
+
+Your choice: update
+Your resume: I really like to eat pizza
+Your choice: exit
+#+END_EXAMPLE
+Then Bob applies for a job:
+#+BEGIN_EXAMPLE
+$ python main.py
+Type 1 if you're in HR, 2 if you want to apply for a job: 2
+Have you already registered? (y/n) n
+Name: Bob
+Your resume: I like to eat cheeseburgers
+Your ID: C2
+Your choice: list
+ID: J1
+Title: Burger King
+Description: Cook hamburgers
+
+ID: J2
+Title: Pizza Hut
+Description: Put sauce on pizza
+
+Your choice: applly
+Your choice: apply
+ID: J1
+Title: Burger King
+
+ID: J2
+Title: Pizza Hut
+
+Enter the ID of the job you wish to apply for.
+ID: J1
+Your choice: check
+ID: A3
+Job: Burger King
+Status: Applied
+
+Your choice: exit
+#+END_EXAMPLE
+Then we process the job applications, accepting Alice to Burger King and rejecting Bob.
+#+BEGIN_EXAMPLE
+$ python main.py
+Type 1 if you're in HR, 2 if you want to apply for a job: 1
+Your choice: list cands
+ID: C1
+Name: Alice
+Resume: I really like to eat pizza
+Applications made:
+ID: A1
+Job: Burger King
+Status: Applied
+ID: A2
+Job: Pizza Hut
+Status: Applied
+
+ID: C2
+Name: Bob
+Resume: I like to eat cheeseburgers
+Applications made:
+ID: A3
+Job: Burger King
+Status: Applied
+
+Your choice: list apps
+ID: A1
+Job: Burger King
+Status: Applied
+
+ID: A2
+Job: Pizza Hut
+Status: Applied
+
+ID: A3
+Job: Burger King
+Status: Applied
+
+Your choice: details
+Application ID: A2
+ID: A2
+Job: Pizza Hut
+Status: Applied
+Candidate: C1
+Your choice: interview
+Application ID: C1
+No such application found
+Your choice: interview
+Application ID: A2
+Transcript of interview: Have you ever made any pizza? Alice: Uh, no
+Your choice: details
+Application ID: A2
+ID: A2
+Job: Pizza Hut
+Status: Interviewed
+Candidate: C1
+Interview transcript: Have you ever made any pizza? Alice: Uh, no
+Your choice: reject
+Application ID: A2
+Your choice: list open apps
+ID: A1
+Job: Burger King
+Status: Applied
+
+ID: A3
+Job: Burger King
+Status: Applied
+
+Your choice: list jobs
+ID: J1
+Title: Burger King
+Description: Cook hamburgers
+
+ID: J2
+Title: Pizza Hut
+Description: Put sauce on pizza
+
+Your choice: close
+Job ID: J2
+Your choice: list jobs
+ID: J1
+Title: Burger King
+Description: Cook hamburgers
+
+ID: J2
+Title: Pizza Hut
+Description: Put sauce on pizza
+
+Your choice: list open jobs
+ID: J1
+Title: Burger King
+Description: Cook hamburgers
+
+Your choice: details
+Application ID: A3
+ID: A3
+Job: Burger King
+Status: Applied
+Candidate: C2
+Your choice: reject
+Application ID: A3
+Please do an interview before rejecting the candidate
+Your choice: list cands
+ID: C1
+Name: Alice
+Resume: I really like to eat pizza
+Applications made:
+ID: A1
+Job: Burger King
+Status: Applied
+ID: A2
+Job: Pizza Hut
+Status: Rejected
+
+ID: C2
+Name: Bob
+Resume: I like to eat cheeseburgers
+Applications made:
+ID: A3
+Job: Burger King
+Status: Applied
+
+Your choice: interview
+Application ID: A3
+Transcript of interview: Do you have any experience making burgers? Bob: No
+Your choice: reject
+Application ID: A3
+Your choice: list open apps
+ID: A1
+Job: Burger King
+Status: Applied
+
+Your choice: interview
+Application ID: A1
+Transcript of interview: Do you have any experience making burgers? Alice: I don't like eating them, but I can make them
+Your choice: accept
+Application ID: A1
+Your choice: list open jobs
+No jobs available
+Your choice: list jobs
+ID: J1
+Title: Burger King
+Description: Cook hamburgers
+
+ID: J2
+Title: Pizza Hut
+Description: Put sauce on pizza
+
+Your choice: exit
+#+END_EXAMPLE
+Then Alice logs in to see her job applications' status:
+#+BEGIN_EXAMPLE
+$ python main.py
+Type 1 if you're in HR, 2 if you want to apply for a job: 2
+Have you already registered? (y/n) y
+Your ID: C1
+Hello, Alice
+Your choice: list
+No jobs available
+Your choice: check
+ID: A1
+Job: Burger King
+Status: Accepted
+
+ID: A2
+Job: Pizza Hut
+Status: Rejected
+
+Your choice: exit
+#+END_EXAMPLE
+And Bob does the same:
+#+BEGIN_EXAMPLE
+$ python main.py
+Type 1 if you're in HR, 2 if you want to apply for a job: 2
+Have you already registered? (y/n) y
+Your ID: C2
+Hello, Bob
+Your choice: check
+ID: A3
+Job: Burger King
+Status: Rejected
+
+Your choice: exit
+#+END_EXAMPLE
