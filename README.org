@@ -1,0 +1,5 @@
+* human-resources
+
+** Issues
+- The Job, Application, and Candidate classes have similar static methods. It would be more concise if they inherited all of them from a common ancestor
+- Multithreading? A separate routine that job candidates run?
